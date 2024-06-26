@@ -1,47 +1,46 @@
-#include<iostream>
-#include<pcl/ModelCoefficients.h>
-#include<pcl/io/pcd_io.h>
-#include<pcl/point_types.h>
-#include<pcl/sample_consensus/method_types.h>
-#include<pcl/sample_consensus/method_types.h>
-#include<pcl/segmentation/sac_segmentation.h>
-#include<pcl/filters/voxel_grid.h>
-#include<pcl/filters/extract_indices.h>
-#include<pcl/visualization/pcl_visualizer.h>
-#include<pcl/filters/statistical_outlier_removal.h>
+#include <iostream>
+#include <pcl/ModelCoefficients.h>
+#include <pcl/io/pcd_io.h>
+#include <pcl/point_types.h>
+#include <pcl/sample_consensus/method_types.h>
+#include <pcl/sample_consensus/method_types.h>
+#include <pcl/segmentation/sac_segmentation.h>
+#include <pcl/filters/voxel_grid.h>
+#include <pcl/filters/extract_indices.h>
+#include <pcl/visualization/pcl_visualizer.h>
+#include <pcl/filters/statistical_outlier_removal.h>
 
 using namespace std;
-int main_indices2(int argc, char** argv)
+int main_indices2(int argc, char **argv)
 {
 	pcl::PCLPointCloud2::Ptr cloud_blob(new pcl::PCLPointCloud2), cloud_filtered_blob(new pcl::PCLPointCloud2);
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZ>),
-		cloud_p(new pcl::PointCloud<pcl::PointXYZ>), cloud_f(new pcl::PointCloud<pcl::PointXYZ>);
-	// ¶ÁÈëµãÔÆÊı¾İ
+			cloud_p(new pcl::PointCloud<pcl::PointXYZ>), cloud_f(new pcl::PointCloud<pcl::PointXYZ>);
+	// è¯»å…¥ç‚¹äº‘æ•°æ®
 	pcl::PCDReader reader;
 	// table_scene_lms400.pcd
 	reader.read("./ro.pcd", *cloud_blob);
 	std::cerr << "pointcloud before filtering: " << cloud_blob->width * cloud_blob->height << " data points." << std::endl;
-	// ´´½¨ÂË²¨Æ÷
+	// åˆ›å»ºæ»¤æ³¢å™¨
 	pcl::VoxelGrid<pcl::PCLPointCloud2> sor;
 	sor.setInputCloud(cloud_blob);
 	sor.setLeafSize(0.01f, 0.01f, 0.01f);
-	sor.filter(*cloud_filtered_blob); // ÌåËØÂË²¨ ºóµÄµãÔÆ ·ÅÖÃµ½ cloud_filtered_blob
-
+	sor.filter(*cloud_filtered_blob); // ä½“ç´ æ»¤æ³¢ åçš„ç‚¹äº‘ æ”¾ç½®åˆ° cloud_filtered_blob
 
 	cout << cloud_filtered_blob->width * cloud_filtered_blob->height << endl;
 
-	// ×ª»¯ÎªÄ£°åµãÔÆ
+	// è½¬åŒ–ä¸ºæ¨¡æ¿ç‚¹äº‘
 	pcl::fromPCLPointCloud2(*cloud_filtered_blob, *cloud_filtered);
 	cout << "pointcloud after filtering: " << cloud_filtered->points.size() << " data points" << endl;
 
-	// ½«ÏÂ²ÉÑùÊı¾İ´æÈë´ÅÅÌ
+	// å°†ä¸‹é‡‡æ ·æ•°æ®å­˜å…¥ç£ç›˜
 	pcl::PCDWriter writer;
 	writer.write<pcl::PointXYZ>("temp.pcd", *cloud_filtered, false);
 
 	pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients());
 	pcl::PointIndices::Ptr inliers(new pcl::PointIndices());
 
-	// ´´½¨·Ö¸î¶ÔÏó
+	// åˆ›å»ºåˆ†å‰²å¯¹è±¡
 	pcl::SACSegmentation<pcl::PointXYZ> seg;
 	seg.setOptimizeCoefficients(true);
 
@@ -50,11 +49,11 @@ int main_indices2(int argc, char** argv)
 	seg.setMaxIterations(1000);
 	seg.setDistanceThreshold(0.01);
 
-	// ´´½¨ÂË²¨¶ÔÏó
+	// åˆ›å»ºæ»¤æ³¢å¯¹è±¡
 	pcl::ExtractIndices<pcl::PointXYZ> extract;
 	int i = 0, nr_points = (int)cloud_filtered->points.size();
 
-	//µ±»¹¶àÓÚ30%µÄÔ­Ê¼µãÔÆÊı¾İÊ±
+	// å½“è¿˜å¤šäº30%çš„åŸå§‹ç‚¹äº‘æ•°æ®æ—¶
 	while (cloud_filtered->points.size() > 0.3 * nr_points)
 	{
 		seg.setInputCloud(cloud_filtered);
@@ -63,7 +62,7 @@ int main_indices2(int argc, char** argv)
 		{
 			break;
 		}
-		// ·ÖÀëÄÚ²ã
+		// åˆ†ç¦»å†…å±‚
 		extract.setInputCloud(cloud_filtered);
 		extract.setIndices(inliers);
 		extract.setNegative(false);
@@ -76,70 +75,69 @@ int main_indices2(int argc, char** argv)
 		ss << "temp_" << i << ".pcd";
 		writer.write(ss.str(), *cloud_p, false);
 		//
-		extract.setNegative(true); // ÌáÈ¡Íâ²ã
+		extract.setNegative(true); // æå–å¤–å±‚
 		extract.filter(*cloud_f);
 		cloud_filtered.swap(cloud_f);
 
 		i++;
-
 	}
 
 	return 0;
 }
 
-//#include <iostream>
-//#include <pcl/ModelCoefficients.h>
-//#include <pcl/io/pcd_io.h>
-//#include <pcl/point_types.h>
-//#include <pcl/sample_consensus/method_types.h>
-//#include <pcl/sample_consensus/model_types.h>
-//#include <pcl/segmentation/sac_segmentation.h>
-//#include <pcl/filters/voxel_grid.h>
-//#include <pcl/filters/extract_indices.h>
-//#include <pcl/visualization/pcl_visualizer.h>
-//#include <pcl/filters/statistical_outlier_removal.h>
-//using namespace std;
-//int
-//main(int argc, char** argv)
+// #include <iostream>
+// #include <pcl/ModelCoefficients.h>
+// #include <pcl/io/pcd_io.h>
+// #include <pcl/point_types.h>
+// #include <pcl/sample_consensus/method_types.h>
+// #include <pcl/sample_consensus/model_types.h>
+// #include <pcl/segmentation/sac_segmentation.h>
+// #include <pcl/filters/voxel_grid.h>
+// #include <pcl/filters/extract_indices.h>
+// #include <pcl/visualization/pcl_visualizer.h>
+// #include <pcl/filters/statistical_outlier_removal.h>
+// using namespace std;
+// int
+// main(int argc, char** argv)
 //{
 //	pcl::PCLPointCloud2::Ptr cloud_blob(new pcl::PCLPointCloud2), cloud_filtered_blob(new pcl::PCLPointCloud2);
 //	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZ>), cloud_p(new pcl::PointCloud<pcl::PointXYZ>), cloud_f(new pcl::PointCloud<pcl::PointXYZ>);
-//	// ÌîÈëµãÔÆÊı¾İ
+//	// å¡«å…¥ç‚¹äº‘æ•°æ®
 //	pcl::PCDReader reader;
 //	reader.read("table_scene_lms400.pcd", *cloud_blob);
 //	std::cerr << "PointCloud before filtering: " << cloud_blob->width * cloud_blob->height << " data points." << std::endl;
-//	// ´´½¨ÂË²¨Æ÷¶ÔÏó:Ê¹ÓÃÒ¶´óĞ¡Îª1cmµÄÏÂ²ÉÑù
+//	// åˆ›å»ºæ»¤æ³¢å™¨å¯¹è±¡:ä½¿ç”¨å¶å¤§å°ä¸º1cmçš„ä¸‹é‡‡æ ·
 //	pcl::VoxelGrid<pcl::PCLPointCloud2> sor;
 //	sor.setInputCloud(cloud_blob);
 //	sor.setLeafSize(0.01f, 0.01f, 0.01f);
-//	sor.filter(*cloud_filtered_blob);//ÌåËØÂË²¨(ÏÂ²ÉÑù)ºóµÄµãÔÆ·ÅÖÃµ½cloud_filtered_blob
+//	sor.filter(*cloud_filtered_blob);//ä½“ç´ æ»¤æ³¢(ä¸‹é‡‡æ ·)åçš„ç‚¹äº‘æ”¾ç½®åˆ°cloud_filtered_blob
 //
 //	cout << cloud_filtered_blob->width * cloud_filtered_blob->height << endl;
 //
-//	// ×ª»¯ÎªÄ£°åµãÔÆ
-//	pcl::fromPCLPointCloud2(*cloud_filtered_blob, *cloud_filtered);//½«ÏÂ²ÉÑùºóµÄµãÔÆ×ª»»ÎªPoinCloudÀàĞÍ
+//	// è½¬åŒ–ä¸ºæ¨¡æ¿ç‚¹äº‘
+//	pcl::fromPCLPointCloud2(*cloud_filtered_blob, *cloud_filtered);//å°†ä¸‹é‡‡æ ·åçš„ç‚¹äº‘è½¬æ¢ä¸ºPoinCloudç±»å‹
 //	cout << "PointCloud after filtering: " << cloud_filtered->points.size() << " data points." << endl;
-//	// ½«ÏÂ²ÉÑùºóµÄÊı¾İ´æÈë´ÅÅÌ
+//	// å°†ä¸‹é‡‡æ ·åçš„æ•°æ®å­˜å…¥ç£ç›˜
 //	pcl::PCDWriter writer;
 //	writer.write<pcl::PointXYZ>("table_scene_lms400_downsampled.pcd", *cloud_filtered, false);
 //	pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients());
-//	pcl::PointIndices::Ptr inliers(new pcl::PointIndices());  //´´½¨Ò»¸öPointIndices½á¹¹ÌåÖ¸Õë
-//	// ´´½¨·Ö¸î¶ÔÏó
+//	pcl::PointIndices::Ptr inliers(new pcl::PointIndices());  //åˆ›å»ºä¸€ä¸ªPointIndicesç»“æ„ä½“æŒ‡é’ˆ
+//	// åˆ›å»ºåˆ†å‰²å¯¹è±¡
 //	pcl::SACSegmentation<pcl::PointXYZ> seg;
-//	// ¿ÉÑ¡
-//	seg.setOptimizeCoefficients(true); //ÉèÖÃ¶Ô¹À¼ÆµÄÄ£ĞÍ×öÓÅ»¯´¦Àí
-//	// ±ØÑ¡
-//	seg.setModelType(pcl::SACMODEL_PLANE);//ÉèÖÃ·Ö¸îÄ£ĞÍÀà±ğ
-//	seg.setMethodType(pcl::SAC_RANSAC);//ÉèÖÃÊ¹ÓÃÄÇ¸öËæ»ú²ÎÊı¹À¼Æ·½·¨
-//	seg.setMaxIterations(1000);//µü´ú´ÎÊı
-//	seg.setDistanceThreshold(0.01);//ÉèÖÃÊÇ·ñÎªÄ£ĞÍÄÚµãµÄ¾àÀëãĞÖµ
-//	// ´´½¨ÂË²¨Æ÷¶ÔÏó
+//	// å¯é€‰
+//	seg.setOptimizeCoefficients(true); //è®¾ç½®å¯¹ä¼°è®¡çš„æ¨¡å‹åšä¼˜åŒ–å¤„ç†
+//	// å¿…é€‰
+//	seg.setModelType(pcl::SACMODEL_PLANE);//è®¾ç½®åˆ†å‰²æ¨¡å‹ç±»åˆ«
+//	seg.setMethodType(pcl::SAC_RANSAC);//è®¾ç½®ä½¿ç”¨é‚£ä¸ªéšæœºå‚æ•°ä¼°è®¡æ–¹æ³•
+//	seg.setMaxIterations(1000);//è¿­ä»£æ¬¡æ•°
+//	seg.setDistanceThreshold(0.01);//è®¾ç½®æ˜¯å¦ä¸ºæ¨¡å‹å†…ç‚¹çš„è·ç¦»é˜ˆå€¼
+//	// åˆ›å»ºæ»¤æ³¢å™¨å¯¹è±¡
 //	pcl::ExtractIndices<pcl::PointXYZ> extract;
 //	int i = 0, nr_points = (int)cloud_filtered->points.size();
-//	// µ±»¹¶àÓÚ30%Ô­Ê¼µãÔÆÊı¾İÊ±
+//	// å½“è¿˜å¤šäº30%åŸå§‹ç‚¹äº‘æ•°æ®æ—¶
 //	while (cloud_filtered->points.size() > 0.3 * nr_points)
 //	{
-//		// ´ÓÓàÏÂµÄµãÔÆÖĞ·Ö¸î×î´óÆ½Ãæ×é³É²¿·Ö
+//		// ä»ä½™ä¸‹çš„ç‚¹äº‘ä¸­åˆ†å‰²æœ€å¤§å¹³é¢ç»„æˆéƒ¨åˆ†
 //		seg.setInputCloud(cloud_filtered);
 //		seg.segment(*inliers, *coefficients);
 //		if (inliers->indices.size() == 0)
@@ -147,23 +145,23 @@ int main_indices2(int argc, char** argv)
 //			cout << "Could not estimate a planar model for the given dataset." << endl;
 //			break;
 //		}
-//		// ·ÖÀëÄÚ²ã
+//		// åˆ†ç¦»å†…å±‚
 //		extract.setInputCloud(cloud_filtered);
 //		extract.setIndices(inliers);
 //		extract.setNegative(false);
 //		extract.filter(*cloud_p);
-//		cout << "cloud_filtered: " << cloud_filtered->size() << endl;//Êä³öÌáÈ¡Ö®ºóÊ£ÓàµÄ
+//		cout << "cloud_filtered: " << cloud_filtered->size() << endl;//è¾“å‡ºæå–ä¹‹åå‰©ä½™çš„
 //
 //		cout << "----------------------------------" << endl;
-//		//±£´æ
+//		//ä¿å­˜
 //		cout << "PointCloud representing the planar component: " << cloud_p->points.size() << " data points." << endl;
 //		std::stringstream ss;
-//		ss << "table_scene_lms400_plane_" << i << ".pcd"; //¶ÔÃ¿Ò»´ÎµÄÌáÈ¡¶¼½øĞĞÁËÎÄ¼ş±£´æ
+//		ss << "table_scene_lms400_plane_" << i << ".pcd"; //å¯¹æ¯ä¸€æ¬¡çš„æå–éƒ½è¿›è¡Œäº†æ–‡ä»¶ä¿å­˜
 //		writer.write<pcl::PointXYZ>(ss.str(), *cloud_p, false);
-//		// ´´½¨ÂË²¨Æ÷¶ÔÏó
-//		extract.setNegative(true);//ÌáÈ¡Íâ²ã
-//		extract.filter(*cloud_f);//½«Íâ²ãµÄÌáÈ¡½á¹û±£´æµ½cloud_f
-//		cloud_filtered.swap(cloud_f);//¾­cloud_filteredÓëcloud_f½»»»
+//		// åˆ›å»ºæ»¤æ³¢å™¨å¯¹è±¡
+//		extract.setNegative(true);//æå–å¤–å±‚
+//		extract.filter(*cloud_f);//å°†å¤–å±‚çš„æå–ç»“æœä¿å­˜åˆ°cloud_f
+//		cloud_filtered.swap(cloud_f);//ç»cloud_filteredä¸cloud_fäº¤æ¢
 //
 //
 //		i++;
@@ -179,14 +177,14 @@ int main_indices2(int argc, char** argv)
 //	pcl::io::loadPCDFile("table_scene_lms400_plane_1.pcd", *cloud_seg2);
 //	pcl::io::loadPCDFile("table_scene_lms400_downsampled.pcd", *cloud_voxel);
 //	/*
-//	//½«ÌáÈ¡½á¹û½øĞĞÍ³¼ÆÑ§ÂË²¨
+//	//å°†æå–ç»“æœè¿›è¡Œç»Ÿè®¡å­¦æ»¤æ³¢
 //	pcl::StatisticalOutlierRemoval<pcl::PointXYZ> sor1;
 //	sor1.setInputCloud(cloud_seg2);
 //	sor1.setMeanK(50);
 //	sor1.setStddevMulThresh(1);
 //	sor1.filter(*cloud_f);
 //	cout<<cloud_f->size()<<endl;
-//  */
+//   */
 //
 //	pcl::visualization::PCLVisualizer::Ptr viewer(new pcl::visualization::PCLVisualizer);
 //	viewer->initCameraParameters();
@@ -215,10 +213,9 @@ int main_indices2(int argc, char** argv)
 //	pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> color4(cloud_filtered, 244, 89, 233);
 //	viewer->addPointCloud(cloud_filtered, color4, "cloud_statical", v4);
 //
-//	// viewer->addCoordinateSystem();//Ìí¼Ó×ø±êÏµ
+//	// viewer->addCoordinateSystem();//æ·»åŠ åæ ‡ç³»
 //
 //	viewer->spin();
 //
 //	return (0);
-//}
-
+// }

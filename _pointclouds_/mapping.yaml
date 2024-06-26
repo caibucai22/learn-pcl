@@ -1,0 +1,9 @@
+basic:
+  lidar_pointxyz_2image: 
+    - *.pcd
+
+  lidar_pointxyzrgb_2image:
+    - *.pcd
+
+  pcd_2_text:
+    - *.pcd

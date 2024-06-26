@@ -13,170 +13,163 @@ typedef pcl::PointCloud<PointNT> PointNCloudT;
 typedef pcl::PointXYZL PointLT;
 typedef pcl::PointCloud<PointLT> PointLCloudT;
 
-void addSupervoxelConnectionsToViewer (PointT &supervoxel_center,
-	PointCloudT &adjacent_supervoxel_centers,
-	std::string supervoxel_name,
-	boost::shared_ptr<pcl::visualization::PCLVisualizer> & viewer);
+void addSupervoxelConnectionsToViewer(PointT &supervoxel_center,
+																			PointCloudT &adjacent_supervoxel_centers,
+																			std::string supervoxel_name,
+																			boost::shared_ptr<pcl::visualization::PCLVisualizer> &viewer);
 
-
-int
-	main (int argc, char ** argv)
+int main(int argc, char **argv)
 {
 	if (argc < 2)
 	{
-		pcl::console::print_error ("Syntax is: %s <pcd-file> \n "
-			"--NT Dsables the single cloud transform \n"
-			"-v <voxel resolution>\n-s <seed resolution>\n"
-			"-c <color weight> \n-z <spatial weight> \n"
-			"-n <normal_weight>\n", argv[0]);
+		pcl::console::print_error("Syntax is: %s <pcd-file> \n "
+															"--NT Dsables the single cloud transform \n"
+															"-v <voxel resolution>\n-s <seed resolution>\n"
+															"-c <color weight> \n-z <spatial weight> \n"
+															"-n <normal_weight>\n",
+															argv[0]);
 		return (1);
 	}
 
-
-	PointCloudT::Ptr cloud = boost::make_shared <PointCloudT> ();
-	pcl::console::print_highlight ("Loading point cloud...\n");
-	if (pcl::io::loadPCDFile<PointT> (argv[1], *cloud))
+		PointCloudT::Ptr cloud = std::shared_ptr<PointCloudT>();
+	pcl::console::print_highlight("Loading point cloud...\n");
+	if (pcl::io::loadPCDFile<PointT>(argv[1], *cloud))
 	{
-		pcl::console::print_error ("Error loading cloud file!\n");
+		pcl::console::print_error("Error loading cloud file!\n");
 		return (1);
 	}
-	cout<<"point size of input: "<<cloud->size()<<endl;
+	cout << "point size of input: " << cloud->size() << endl;
 
-	bool disable_transform = pcl::console::find_switch (argc, argv, "--NT");
+	bool disable_transform = pcl::console::find_switch(argc, argv, "--NT");
 
 	float voxel_resolution = 0.008f;
-	bool voxel_res_specified = pcl::console::find_switch (argc, argv, "-v");
+	bool voxel_res_specified = pcl::console::find_switch(argc, argv, "-v");
 	if (voxel_res_specified)
-		pcl::console::parse (argc, argv, "-v", voxel_resolution);
+		pcl::console::parse(argc, argv, "-v", voxel_resolution);
 
 	float seed_resolution = 0.1f;
-	bool seed_res_specified = pcl::console::find_switch (argc, argv, "-s");
+	bool seed_res_specified = pcl::console::find_switch(argc, argv, "-s");
 	if (seed_res_specified)
-		pcl::console::parse (argc, argv, "-s", seed_resolution);
+		pcl::console::parse(argc, argv, "-s", seed_resolution);
 
 	float color_importance = 0.2f;
-	if (pcl::console::find_switch (argc, argv, "-c"))
-		pcl::console::parse (argc, argv, "-c", color_importance);
+	if (pcl::console::find_switch(argc, argv, "-c"))
+		pcl::console::parse(argc, argv, "-c", color_importance);
 
 	float spatial_importance = 0.4f;
-	if (pcl::console::find_switch (argc, argv, "-z"))
-		pcl::console::parse (argc, argv, "-z", spatial_importance);
+	if (pcl::console::find_switch(argc, argv, "-z"))
+		pcl::console::parse(argc, argv, "-z", spatial_importance);
 
 	float normal_importance = 1.0f;
-	if (pcl::console::find_switch (argc, argv, "-n"))
-		pcl::console::parse (argc, argv, "-n", normal_importance);
+	if (pcl::console::find_switch(argc, argv, "-n"))
+		pcl::console::parse(argc, argv, "-n", normal_importance);
 
 	//////////////////////////////  //////////////////////////////
 	////// This is how to use supervoxels
 	//////////////////////////////  //////////////////////////////
 
-	pcl::SupervoxelClustering<PointT> super (voxel_resolution, seed_resolution);
+	pcl::SupervoxelClustering<PointT> super(voxel_resolution, seed_resolution);
 	if (disable_transform)
-		super.setUseSingleCameraTransform (false);
-	super.setInputCloud (cloud);
-	super.setColorImportance (color_importance);
-	super.setSpatialImportance (spatial_importance);
-	super.setNormalImportance (normal_importance);
+		super.setUseSingleCameraTransform(false);
+	super.setInputCloud(cloud);
+	super.setColorImportance(color_importance);
+	super.setSpatialImportance(spatial_importance);
+	super.setNormalImportance(normal_importance);
 
-	std::map <uint32_t, pcl::Supervoxel<PointT>::Ptr > supervoxel_clusters;
-	//¸Ãµ¥Ó³ÉäÈİÆ÷ÒÔ±êÇ©Îª¼üÖµ´æ´¢ËùÓĞ³¬ÌåËØ
-	pcl::console::print_highlight ("Extracting supervoxels!\n");
-	super.extract (supervoxel_clusters);
-	pcl::console::print_info ("Found %d supervoxels\n", supervoxel_clusters.size ());
+	std::map<uint32_t, pcl::Supervoxel<PointT>::Ptr> supervoxel_clusters;
+	// è¯¥å•æ˜ å°„å®¹å™¨ä»¥æ ‡ç­¾ä¸ºé”®å€¼å­˜å‚¨æ‰€æœ‰è¶…ä½“ç´ 
+	pcl::console::print_highlight("Extracting supervoxels!\n");
+	super.extract(supervoxel_clusters);
+	pcl::console::print_info("Found %d supervoxels\n", supervoxel_clusters.size());
 
-	boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer (new pcl::visualization::PCLVisualizer ("µãÔÆ¿âPCLÑ§Ï°½Ì³ÌµÚ¶ş°æ-³¬ÌåËØ·Ö¸î"));
-	viewer->setBackgroundColor (1,1,1);
+	boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer(new pcl::visualization::PCLVisualizer("ç‚¹äº‘åº“PCLå­¦ä¹ æ•™ç¨‹ç¬¬äºŒç‰ˆ-è¶…ä½“ç´ åˆ†å‰²"));
+	viewer->setBackgroundColor(1, 1, 1);
 
-	PointCloudT::Ptr voxel_centroid_cloud = super.getVoxelCentroidCloud ();
-	cout<<"voxel centroids: "<<voxel_centroid_cloud->size()<<endl;
-	if(0)
-	{//¶ÔÓÚÌåËØÖĞĞÄµÄ¿ÉÊÓ»¯ºÍ±£´æ£¬»ù±¾¾ÍÊÇ¶ÔÔ­Ê¼Êı¾İµÄ¿Õ¼ä¾ùÔÈÏÂ²ÉÑù
-		viewer->addPointCloud<PointT>(voxel_centroid_cloud,"voxel centroids");
-		pcl::io::savePCDFile("voxel_centroids.pcd",*voxel_centroid_cloud);
-		viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE,4, "voxel centroids");
-		viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_OPACITY,0.5, "voxel centroids");
+	PointCloudT::Ptr voxel_centroid_cloud = super.getVoxelCentroidCloud();
+	cout << "voxel centroids: " << voxel_centroid_cloud->size() << endl;
+	if (0)
+	{ // å¯¹äºä½“ç´ ä¸­å¿ƒçš„å¯è§†åŒ–å’Œä¿å­˜ï¼ŒåŸºæœ¬å°±æ˜¯å¯¹åŸå§‹æ•°æ®çš„ç©ºé—´å‡åŒ€ä¸‹é‡‡æ ·
+		viewer->addPointCloud<PointT>(voxel_centroid_cloud, "voxel centroids");
+		pcl::io::savePCDFile("voxel_centroids.pcd", *voxel_centroid_cloud);
+		viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 4, "voxel centroids");
+		viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_OPACITY, 0.5, "voxel centroids");
 	}
 
-
-	PointLCloudT::Ptr labeled_voxel_cloud = super.getLabeledVoxelCloud ();
-	if(1)
-	{//³¬ÌåËØ·Ö¸î½á¹ûÏÔÊ¾Óë±£´æ
-		pcl::io::savePCDFile("labeled_voxels.pcd",*labeled_voxel_cloud);
-		viewer->addPointCloud (labeled_voxel_cloud, "labeled voxels");
-		cout<<"labeled voxels: "<<labeled_voxel_cloud->size()<<endl;
-		viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE,3, "labeled voxels");
+	PointLCloudT::Ptr labeled_voxel_cloud = super.getLabeledVoxelCloud();
+	if (1)
+	{ // è¶…ä½“ç´ åˆ†å‰²ç»“æœæ˜¾ç¤ºä¸ä¿å­˜
+		pcl::io::savePCDFile("labeled_voxels.pcd", *labeled_voxel_cloud);
+		viewer->addPointCloud(labeled_voxel_cloud, "labeled voxels");
+		cout << "labeled voxels: " << labeled_voxel_cloud->size() << endl;
+		viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, "labeled voxels");
 		// viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_OPACITY,0.8, "labeled voxels");
 	}
 
-	PointNCloudT::Ptr sv_normal_cloud = super.makeSupervoxelNormalCloud (supervoxel_clusters);
+	PointNCloudT::Ptr sv_normal_cloud = super.makeSupervoxelNormalCloud(supervoxel_clusters);
 	//
-	if(0)//³¬ÌåËØ¶ÔÓ¦µÄ·¨ÏßÌØÕ÷¿ÉÊÓ»¯
-		viewer->addPointCloudNormals<pcl::PointNormal> (sv_normal_cloud,1,0.05f, "supervoxel_normals");
+	if (0) // è¶…ä½“ç´ å¯¹åº”çš„æ³•çº¿ç‰¹å¾å¯è§†åŒ–
+		viewer->addPointCloudNormals<pcl::PointNormal>(sv_normal_cloud, 1, 0.05f, "supervoxel_normals");
 
-	pcl::console::print_highlight ("Getting supervoxel adjacency\n");
+	pcl::console::print_highlight("Getting supervoxel adjacency\n");
 	std::multimap<uint32_t, uint32_t> supervoxel_adjacency;
-	super.getSupervoxelAdjacency (supervoxel_adjacency);
-	cout<<"size of supervoxel_adjacency: "<<supervoxel_adjacency.size()<<endl;
+	super.getSupervoxelAdjacency(supervoxel_adjacency);
+	cout << "size of supervoxel_adjacency: " << supervoxel_adjacency.size() << endl;
 
-	//±éÀú¶àÖØÓ³ÉäÈİÆ÷¹¹ÔìÁÚ½ÓÍ¼
-	std::multimap<uint32_t,uint32_t>::iterator label_itr = supervoxel_adjacency.begin ();
-	for ( ; label_itr != supervoxel_adjacency.end (); )
+	// éå†å¤šé‡æ˜ å°„å®¹å™¨æ„é€ é‚»æ¥å›¾
+	std::multimap<uint32_t, uint32_t>::iterator label_itr = supervoxel_adjacency.begin();
+	for (; label_itr != supervoxel_adjacency.end();)
 	{
-		//»ñÈ¡±êÇ©Öµ
+		// è·å–æ ‡ç­¾å€¼
 		uint32_t supervoxel_label = label_itr->first;
-		//¸ù¾İ±êÇ©Ë÷Òıµ½¸Ã³¬ÌåËØ
-		pcl::Supervoxel<PointT>::Ptr supervoxel = supervoxel_clusters.at (supervoxel_label);
+		// æ ¹æ®æ ‡ç­¾ç´¢å¼•åˆ°è¯¥è¶…ä½“ç´ 
+		pcl::Supervoxel<PointT>::Ptr supervoxel = supervoxel_clusters.at(supervoxel_label);
 
-		//±éÀú¸Ã³¬ÌåËØÏàÁÚ³¬ÌåËØ²¢ÒÔÆäÏàÁÚ³¬ÌåËØÖĞĞÄÎªµã¼¯¹¹ÔìµãÔÆ£¬ÓÃÓÚºóĞø¿ÉÊÓ»¯£¬ÕâÀïµÄÏàÁÚ³¬ÌåËØÔÚ¶àÖØÓ³ÉäÈİÆ÷ÖĞ¾ßÓĞÏàÍ¬µÄ¼üÖµ
+		// éå†è¯¥è¶…ä½“ç´ ç›¸é‚»è¶…ä½“ç´ å¹¶ä»¥å…¶ç›¸é‚»è¶…ä½“ç´ ä¸­å¿ƒä¸ºç‚¹é›†æ„é€ ç‚¹äº‘ï¼Œç”¨äºåç»­å¯è§†åŒ–ï¼Œè¿™é‡Œçš„ç›¸é‚»è¶…ä½“ç´ åœ¨å¤šé‡æ˜ å°„å®¹å™¨ä¸­å…·æœ‰ç›¸åŒçš„é”®å€¼
 		PointCloudT adjacent_supervoxel_centers;
-		std::multimap<uint32_t,uint32_t>::iterator adjacent_itr = supervoxel_adjacency.equal_range (supervoxel_label).first;
-		for ( ; adjacent_itr!=supervoxel_adjacency.equal_range (supervoxel_label).second; ++adjacent_itr)
+		std::multimap<uint32_t, uint32_t>::iterator adjacent_itr = supervoxel_adjacency.equal_range(supervoxel_label).first;
+		for (; adjacent_itr != supervoxel_adjacency.equal_range(supervoxel_label).second; ++adjacent_itr)
 		{
-			pcl::Supervoxel<PointT>::Ptr neighbor_supervoxel = supervoxel_clusters.at (adjacent_itr->second);
-			adjacent_supervoxel_centers.push_back (neighbor_supervoxel->centroid_);
+			pcl::Supervoxel<PointT>::Ptr neighbor_supervoxel = supervoxel_clusters.at(adjacent_itr->second);
+			adjacent_supervoxel_centers.push_back(neighbor_supervoxel->centroid_);
 		}
 		//
 		std::stringstream ss;
 		ss << "supervoxel_" << supervoxel_label;
-		//cout<<ss.str()<<endl;
-		//»æÖÆ¸Ã³¬ÌåËØÓëÆäÏàÁÚ³¬ÌåËØ×ÓÍ¼
-		addSupervoxelConnectionsToViewer (supervoxel->centroid_, adjacent_supervoxel_centers, ss.str (), viewer);
-		//Ê¹µü´úÆ÷Ö¸ÏòÏÂÒ»¸ö±êÇ©¡£
-		label_itr = supervoxel_adjacency.upper_bound (supervoxel_label);
+		// cout<<ss.str()<<endl;
+		// ç»˜åˆ¶è¯¥è¶…ä½“ç´ ä¸å…¶ç›¸é‚»è¶…ä½“ç´ å­å›¾
+		addSupervoxelConnectionsToViewer(supervoxel->centroid_, adjacent_supervoxel_centers, ss.str(), viewer);
+		// ä½¿è¿­ä»£å™¨æŒ‡å‘ä¸‹ä¸€ä¸ªæ ‡ç­¾ã€‚
+		label_itr = supervoxel_adjacency.upper_bound(supervoxel_label);
 	}
 
-	while (!viewer->wasStopped ())
+	while (!viewer->wasStopped())
 	{
 		viewer->spinOnce();
 	}
 	return (0);
 }
 
-void
-	addSupervoxelConnectionsToViewer (PointT &supervoxel_center,
-	PointCloudT &adjacent_supervoxel_centers,
-	std::string supervoxel_name,
-	boost::shared_ptr<pcl::visualization::PCLVisualizer> & viewer)
+void addSupervoxelConnectionsToViewer(PointT &supervoxel_center,
+																			PointCloudT &adjacent_supervoxel_centers,
+																			std::string supervoxel_name,
+																			boost::shared_ptr<pcl::visualization::PCLVisualizer> &viewer)
 {
 
-	int i=0;
-	//Iterate through all adjacent points, and add a center point to adjacent point pair
-	PointCloudT::iterator adjacent_itr = adjacent_supervoxel_centers.begin ();
-	for ( ; adjacent_itr != adjacent_supervoxel_centers.end (); ++adjacent_itr)
+	int i = 0;
+	// Iterate through all adjacent points, and add a center point to adjacent point pair
+	PointCloudT::iterator adjacent_itr = adjacent_supervoxel_centers.begin();
+	for (; adjacent_itr != adjacent_supervoxel_centers.end(); ++adjacent_itr)
 	{
 		std::stringstream ss;
-		ss<<supervoxel_name<<i;
-		viewer->addLine(supervoxel_center,*adjacent_itr,ss.str());
+		ss << supervoxel_name << i;
+		viewer->addLine(supervoxel_center, *adjacent_itr, ss.str());
 
-		viewer->setShapeRenderingProperties(pcl::visualization::PCL_VISUALIZER_LINE_WIDTH,3,ss.str());
-		viewer->setShapeRenderingProperties(pcl::visualization::PCL_VISUALIZER_COLOR,0,255,0,ss.str());
-		ss<<supervoxel_name<<i;
-		viewer->addSphere(supervoxel_center,0.008,0,0,255,ss.str());
-		viewer->setShapeRenderingProperties(pcl::visualization::PCL_VISUALIZER_SHADING,pcl::visualization::PCL_VISUALIZER_SHADING_GOURAUD,ss.str());
-		//viewer->setShapeRenderingProperties(pcl::visualization::PCL_VISUALIZER_OPACITY,0.9,ss.str());
+		viewer->setShapeRenderingProperties(pcl::visualization::PCL_VISUALIZER_LINE_WIDTH, 3, ss.str());
+		viewer->setShapeRenderingProperties(pcl::visualization::PCL_VISUALIZER_COLOR, 0, 255, 0, ss.str());
+		ss << supervoxel_name << i;
+		viewer->addSphere(supervoxel_center, 0.008, 0, 0, 255, ss.str());
+		viewer->setShapeRenderingProperties(pcl::visualization::PCL_VISUALIZER_SHADING, pcl::visualization::PCL_VISUALIZER_SHADING_GOURAUD, ss.str());
+		// viewer->setShapeRenderingProperties(pcl::visualization::PCL_VISUALIZER_OPACITY,0.9,ss.str());
 		i++;
 	}
-
 }
-
-

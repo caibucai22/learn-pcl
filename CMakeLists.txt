@@ -50,6 +50,18 @@ endif()
 
 # boost setting
 
+set(Boost_ROOT "D:/03-env/boost_1_84_0")
+find_package(Boost 1.70 REQUIRED)
+if(Boost_FOUND)
+  message("Boost found")
+  message("${Boost_INCLUDE_DIRS} | ${Boost_LIBRARIES} | ${Boost_LIBRARY_DIRS}")
+	include_directories(${Boost_INCLUDE_DIRS})
+
+	link_directories(${Boost_LIBRARY_DIRS})
+else()
+  message(FATAL_ERROR "Boost not found")
+endif()
+
 
 # link function
 function(link_pcl_libraries target)
@@ -58,6 +70,10 @@ endfunction()
 
 function(link_opencv_libraries target)
     target_link_libraries(${target} PRIVATE ${OpenCV_LIBRARIES})
+endfunction()
+
+function(link_boost_libraries target)
+    target_link_libraries(${target} PRIVATE ${Boost_LIBRARIES})
 endfunction()
 
 function(link_pcl_opencv_libraries target)

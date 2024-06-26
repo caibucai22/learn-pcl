@@ -1,3 +1,7 @@
 add_executable(lidar_pointxyz2img lidar_pointxyz_2image.cpp)
 
+add_executable(lidar_pointxyzrgb2img lidar_pointxyzrgb_2image.cpp)
+
 link_pcl_opencv_libraries(lidar_pointxyz2img)
+
+link_pcl_opencv_libraries(lidar_pointxyzrgb2img)
