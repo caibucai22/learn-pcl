@@ -11,7 +11,7 @@
 #include <pcl/filters/statistical_outlier_removal.h>
 
 using namespace std;
-int main_indices2(int argc, char **argv)
+int main(int argc, char **argv)
 {
 	pcl::PCLPointCloud2::Ptr cloud_blob(new pcl::PCLPointCloud2), cloud_filtered_blob(new pcl::PCLPointCloud2);
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZ>),
