@@ -7,3 +7,8 @@ basic:
 
   pcd_2_text:
     - *.pcd
+
+  supervoxel_clustering:
+    - milk_cartoon_all_small_clorox.pcd
+    - pig.pcd
+    - pig_farm.pcd
