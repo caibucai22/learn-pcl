@@ -1,26 +1,25 @@
 #pragma once
-#include<string>
-#include<iostream>
-#include<pcl/io/pcd_io.h>
-#include<pcl/point_types.h>
-#include<pcl/common/time.h>
-#include<pcl/visualization/pcl_visualizer.h>
-#include<pcl/visualization/point_cloud_color_handlers.h>
+#include <string>
+#include <iostream>
+#include <pcl/io/pcd_io.h>
+#include <pcl/point_types.h>
+#include <pcl/common/time.h>
+#include <pcl/visualization/pcl_visualizer.h>
+#include <pcl/visualization/point_cloud_color_handlers.h>
 
+#include <chrono>
+#include <thread>
 
-#include<chrono>
-#include<thread>
+// æ‰“å°å‚æ•°
+void printArgs(int argc, char **argv);
 
-// ´òÓ¡²ÎÊı
-void printArgs(int argc, char** argv);
+// æ²¡æœ‰åŸºäº æ³›å‹å®ç°
 
-// Ã»ÓĞ»ùÓÚ ·ºĞÍÊµÏÖ 
-
-void visualizeCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, pcl::PointCloud<pcl::PointXYZ>::Ptr& filter_cloud);
+void visualizeCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr &cloud, pcl::PointCloud<pcl::PointXYZ>::Ptr &filter_cloud);
 
 void loadPCD(std::string pcd_path, pcl::PointCloud<pcl::PointXYZ>::Ptr ptr);
 
-// ÏÂ²ÉÑù
+// ä¸‹é‡‡æ ·
 void downSample(pcl::PointCloud<pcl::PointXYZ>::Ptr source_cloud, pcl::PointCloud<pcl::PointXYZ>::Ptr dest_cloud);
 
-// ¾ùÔÈ²ÉÑù
+// å‡åŒ€é‡‡æ ·

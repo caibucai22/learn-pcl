@@ -1,4 +1,6 @@
 basic:
+  kmeans:
+    - maize.pcd
   lidar_pointxyz_2image: 
     - *.pcd
 
