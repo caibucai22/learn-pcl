@@ -1,14 +1,15 @@
-#include<iostream>
-#include<pcl/io/pcd_io.h>
-#include<pcl/point_types.h>
-#include<pcl/common/time.h>
-#include<pcl/filters/radius_outlier_removal.h>
-#include<pcl/visualization/pcl_visualizer.h>
-#include<boost/thread/thread.hpp>
+#include <iostream>
+#include <pcl/io/pcd_io.h>
+#include <pcl/point_types.h>
+#include <pcl/common/time.h>
+#include <pcl/filters/radius_outlier_removal.h>
+#include <pcl/visualization/pcl_visualizer.h>
+#include <boost/thread/thread.hpp>
 #include <chrono>
 #include <thread>
 
-void visualizeCloud_(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, pcl::PointCloud<pcl::PointXYZ>::Ptr& filter_cloud) {
+void visualizeCloud_(pcl::PointCloud<pcl::PointXYZ>::Ptr &cloud, pcl::PointCloud<pcl::PointXYZ>::Ptr &filter_cloud)
+{
 	boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer(new pcl::visualization::PCLVisualizer("show cloud"));
 	int v1(0), v2(0);
 	viewer->createViewPort(0.0, 0.0, 0.5, 1.0, v1);
@@ -18,35 +19,37 @@ void visualizeCloud_(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, pcl::PointCloud
 	viewer->setBackgroundColor(0.1, 0.1, 0.1, v2);
 	viewer->addText("filter cloud", 10, 10, "v2_text", v2);
 
-	// °´ÕÕz ×Ö¶Î½øĞĞäÖÈ¾
+	// æŒ‰ç…§z å­—æ®µè¿›è¡Œæ¸²æŸ“
 	pcl::visualization::PointCloudColorHandlerGenericField<pcl::PointXYZ> fildColor(cloud, "z");
 	viewer->addPointCloud<pcl::PointXYZ>(cloud, fildColor, "sample cloud", v1);
 	viewer->addPointCloud<pcl::PointXYZ>(filter_cloud, "cloud_filtered", v2);
 	viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_COLOR, 0, 1, 0, "cloud_filtered", v2);
 
-	while (!viewer->wasStopped()) {
+	while (!viewer->wasStopped())
+	{
 		viewer->spinOnce(100);
-		//boost::this_thread::sleep(boost::posix_time::microseconds(100000));
+		// boost::this_thread::sleep(boost::posix_time::microseconds(100000));
 		std::this_thread::sleep_for(std::chrono::microseconds(100000));
 	}
 }
 
-int main7(int argc, char** argv)
+int main7(int argc, char **argv)
 {
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZ>);
 
-	if (pcl::io::loadPCDFile("./ro.pcd", *cloud)) {
+	if (pcl::io::loadPCDFile("./ro.pcd", *cloud))
+	{
 		PCL_ERROR("could not read file\n");
 		return (-1);
 	}
 
-	// °ë¾¶ÂË²¨
+	// åŠå¾„æ»¤æ³¢
 	pcl::StopWatch time;
 	pcl::RadiusOutlierRemoval<pcl::PointXYZ> ror;
 	ror.setInputCloud(cloud);
 	ror.setRadiusSearch(0.1);
-	ror.setMinNeighborsInRadius(10); // ÉèÖÃ²éÑ¯µãµÄÁìÓòµã¼¯ÊıĞ¡ÓÚ10 É¾³ı
+	ror.setMinNeighborsInRadius(10); // è®¾ç½®æŸ¥è¯¢ç‚¹çš„é¢†åŸŸç‚¹é›†æ•°å°äº10 åˆ é™¤
 	ror.filter(*cloud_filtered);
 
 	// info print
@@ -56,5 +59,4 @@ int main7(int argc, char** argv)
 
 	visualizeCloud_(cloud, cloud_filtered);
 	return 0;
-
 }

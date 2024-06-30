@@ -30,11 +30,15 @@ void viewerPsycho(pcl::visualization::PCLVisualizer &viewer)
 	user_data++;
 }
 
-int main()
+int main(int argc, char *argv[])
 {
 	// 创建并读取点云
 	pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGBA>);
-	pcl::io::loadPCDFile("./_pointclouds_/bunny.pcd", *cloud);
+	if (argc < 2 || pcl::io::loadPCDFile(argv[1], *cloud) == -1)
+	{
+		PCL_ERROR("load pcd failed");
+		return -1;
+	}
 
 	pcl::visualization::CloudViewer viewer("Cloud Viewer");
 

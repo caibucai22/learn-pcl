@@ -7,6 +7,8 @@
 #include <pcl/visualization/pcl_visualizer.h>
 #include <pcl/visualization/point_cloud_color_handlers.h>
 
+#include <boost/smart_ptr/shared_ptr.hpp>
+
 #include <chrono>
 #include <thread>
 

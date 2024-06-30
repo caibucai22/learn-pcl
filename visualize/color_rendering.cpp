@@ -1,17 +1,15 @@
-#include<pcl/point_types.h>
-#include<pcl/visualization/pcl_visualizer.h>
-#include<pcl/io/io.h>
-#include<pcl/io/pcd_io.h>
+#include <pcl/point_types.h>
+#include <pcl/visualization/pcl_visualizer.h>
+#include <pcl/io/io.h>
+#include <pcl/io/pcd_io.h>
 
-
-int main05()
+int main()
 {
 
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud2(new pcl::PointCloud<pcl::PointXYZ>);
-	pcl::PointCloud<pcl::PointXYZRGB>::Ptr  cloud_rgb(new pcl::PointCloud<pcl::PointXYZRGB>);
+	pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_rgb(new pcl::PointCloud<pcl::PointXYZRGB>);
 	pcl::io::loadPCDFile("bunny.pcd", *cloud);
-	
 
 	boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer(new pcl::visualization::PCLVisualizer("show cloud"));
 	int v1(0), v2(0);
@@ -21,21 +19,21 @@ int main05()
 	viewer->createViewPort(0.5, 0.0, 1.0, 1.0, v2);
 	viewer->setBackgroundColor(0.1, 0.1, 0.1, v2);
 	viewer->addText("filter cloud", 10, 10, "v2_text", v2);
-	
-	// ÏÔÊ¾µãÔÆ×Ô´øµÄÑÕÉ«ĞÅÏ¢
-	pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> rgb(cloud_rgb);
-	
-	// °´ÕÕz ×Ö¶Î½øĞĞäÖÈ¾
-	pcl::visualization::PointCloudColorHandlerGenericField<pcl::PointXYZ> fildColor(cloud, "z");
 
+	// æ˜¾ç¤ºç‚¹äº‘è‡ªå¸¦çš„é¢œè‰²ä¿¡æ¯
+	pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> rgb(cloud_rgb);
+
+	// æŒ‰ç…§z å­—æ®µè¿›è¡Œæ¸²æŸ“
+	pcl::visualization::PointCloudColorHandlerGenericField<pcl::PointXYZ> fildColor(cloud, "z");
 
 	viewer->addPointCloud<pcl::PointXYZ>(cloud, fildColor, "sample cloud", v1);
 	viewer->addPointCloud<pcl::PointXYZ>(cloud2, "cloud_processed", v2);
 	viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_COLOR, 0, 1, 0, "cloud_filtered", v2);
-	
-	while (!viewer->wasStopped()) {
+
+	while (!viewer->wasStopped())
+	{
 		viewer->spinOnce(100);
-		//boost::this_thread::sleep(boost::posix_time::microseconds(100000));
+		// boost::this_thread::sleep(boost::posix_time::microseconds(100000));
 		std::this_thread::sleep_for(std::chrono::microseconds(100000));
 	}
 
