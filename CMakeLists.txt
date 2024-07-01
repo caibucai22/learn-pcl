@@ -86,3 +86,4 @@ add_subdirectory(basic)
 
 add_subdirectory(visualize)
 
+add_subdirectory(filter)

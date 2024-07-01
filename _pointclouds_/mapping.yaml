@@ -14,3 +14,9 @@ basic:
     - milk_cartoon_all_small_clorox.pcd
     - pig.pcd
     - pig_farm.pcd
+
+filter:
+  passthrough:
+    - bunny.pcd
+  voxelgrid:
+    - ro.pcd
