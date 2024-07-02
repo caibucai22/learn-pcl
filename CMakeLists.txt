@@ -84,6 +84,8 @@ endfunction()
 # subdir
 add_subdirectory(basic)
 
+add_subdirectory(detect)
+
 add_subdirectory(visualize)
 
 add_subdirectory(filter)

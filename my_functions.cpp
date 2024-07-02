@@ -16,13 +16,13 @@ void visualizeCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr &cloud, pcl::PointCloud<
 	viewer->addText("point cloud", 10, 10, "v1_text", v1);
 	viewer->createViewPort(0.5, 0.0, 1.0, 1.0, v2);
 	viewer->setBackgroundColor(0.1, 0.1, 0.1, v2);
-	viewer->addText("filter cloud", 10, 10, "v2_text", v2);
+	viewer->addText("processed cloud", 10, 10, "v2_text", v2);
 
 	// 按照z 字段进行渲染
 	pcl::visualization::PointCloudColorHandlerGenericField<pcl::PointXYZ> fildColor(cloud, "z");
 	viewer->addPointCloud<pcl::PointXYZ>(cloud, fildColor, "sample cloud", v1);
 	viewer->addPointCloud<pcl::PointXYZ>(filter_cloud, "cloud_processed", v2);
-	viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_COLOR, 0, 1, 0, "cloud_filtered", v2);
+	viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_COLOR, 0, 1, 0, "cloud_processed", v2);
 
 	while (!viewer->wasStopped())
 	{

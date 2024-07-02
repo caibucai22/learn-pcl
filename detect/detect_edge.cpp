@@ -5,59 +5,115 @@
  * @version 0.1
  * @date 2024-03-15
  *
- * @copyright Copyright (c) 2024
+ * @copyright Copyright (c) 2024 & ref https://blog.csdn.net/suyunzzz/article/details/99610120
  *
  */
 
 #include <pcl/features/boundary.h>
 #include <pcl/visualization/cloud_viewer.h>
 #include <pcl/io/ply_io.h>
+#include <pcl/kdtree/kdtree_flann.h>
+#include <pcl/filters/normal_space.h>
+#include <pcl/features/normal_3d.h>
+#include <pcl/console/parse.h>
+#include <chrono>
 
-int main()
+#include "../my_functions.h"
+
+/**
+ * @brief
+ *
+ * @param cloud
+ * @param ne_radiusearch_r
+ * @param be_radiusearch_r
+ * @param boundary
+ * @return int
+ */
+int estimateBorders(pcl::PointCloud<pcl::PointXYZ>::Ptr &cloud, float ne_radiusearch_r, float be_radiusearch_r,
+                    pcl::PointCloud<pcl::PointXYZ>::Ptr &cloud_boundary)
+{
+  pcl::PointCloud<pcl::Boundary> boundaries;
+  pcl::BoundaryEstimation<pcl::PointXYZ, pcl::Normal, pcl::Boundary> boundEst;
+  pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> ne;
+  pcl::PointCloud<pcl::Normal>::Ptr normals_ptr(new pcl::PointCloud<pcl::Normal>);
+  // pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_boundary(new pcl::PointCloud<pcl::PointXYZ>);
+
+  auto start1 = std::chrono::high_resolution_clock::now();
+  // normal estimation
+  ne.setInputCloud(cloud);
+  ne.setRadiusSearch(ne_radiusearch_r);
+  ne.compute(*normals_ptr);
+
+  std::chrono::duration<double> duration = std::chrono::high_resolution_clock::now() - start1;
+  std::cout << "normal estimation elapsed time: " << duration.count() << std::endl;
+
+  std::cout << "radiusearch_r " << ne_radiusearch_r << std::endl;
+  std::cout << "normals: " << normals_ptr->size() << std::endl;
+
+  auto start2 = std::chrono::high_resolution_clock::now();
+  boundEst.setInputCloud(cloud);
+  boundEst.setInputNormals(normals_ptr);
+  boundEst.setRadiusSearch(be_radiusearch_r); // 可以k近邻 也可以radiussearch
+  boundEst.setAngleThreshold(M_PI / 4);
+  boundEst.setSearchMethod(pcl::search::KdTree<pcl::PointXYZ>::Ptr(new pcl::search::KdTree<pcl::PointXYZ>));
+  boundEst.compute(boundaries);
+  std::chrono::duration<double> duration2 = std::chrono::high_resolution_clock::now() - start2;
+  std::cout << "boundary estimation elapsed time: " << duration2.count() << std::endl;
+
+  std::cout << "boundaries: " << boundaries.points.size() << std::endl;
+
+  // 存储估计为边界的点云数据，将边界结果保存为 pcl:: PointXYZ 类型
+  for (size_t i = 0; i < cloud->points.size(); i++)
+  {
+    if (boundaries[i].boundary_point > 0)
+    {
+      cloud_boundary->push_back(cloud->points[i]);
+    }
+  }
+  auto start3 = std::chrono::high_resolution_clock::now();
+  std::cout << "fuc consumed all " << std::chrono::duration<double>(start3 - start1).count() << std::endl;
+
+  return 0;
+}
+
+void printUsage(const char *progName)
+{
+  std::cout << "\n\nUsage: " << progName << " cloud_file_path [options]\n\n"
+            << "Options:\n"
+            << "-------------------------------------------\n"
+            << "-h                 this help\n"
+            << "--nr              radiussearch r for normal estimation\n"
+            << "--br              radiussearch r for boundary estimation\n";
+}
+
+int main(int argc, char *argv[])
 {
   // 输入点云和法线
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
-  pcl::PointCloud<pcl::Normal>::Ptr normal(new pcl::PointCloud<pcl::Normal>);
-  pcl::PLYReader reader;
-  reader.read("*.ply", *cloud);
-  reader.read("*.ply", *normal);
-
-  // 计算边界
-  pcl::PointCloud<pcl::Boundary>::Ptr boundaries(new pcl::PointCloud<pcl::Boundary>);
-  boundaries->resize(cloud->size()); // 初始化大小
-  pcl::BoundaryEstimation<pcl::PointXYZ, pcl::Normal, pcl::Boundary> boundary_estimation;
-  boundary_estimation.setInputCloud(cloud);
-  boundary_estimation.setInputNormals(normal);
-  pcl::search::KdTree<pcl::PointXYZ>::Ptr kdtree_ptr(new pcl::search::KdTree<pcl::PointXYZ>);
-  boundary_estimation.setSearchMethod(kdtree_ptr);
-  boundary_estimation.setKSearch(30); // 设置k近邻数量
-  boundary_estimation.setAngleThreshold(M_PI * 0.85);
-  boundary_estimation.compute(*boundaries);
-
-  // 可视化
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_visual(new pcl::PointCloud<pcl::PointXYZRGB>);
-  cloud_visual->resize(cloud->size());
-
-  for (size_t i = 0; i < cloud->size(); i++)
+  pcl::PCDReader reader; // PLYReader
+  if (argc < 2 || reader.read(argv[1], *cloud) < 0)
   {
-    cloud_visual->points[i].x = cloud->points[i].x;
-    cloud_visual->points[i].y = cloud->points[i].y;
-    cloud_visual->points[i].z = cloud->points[i].z;
-    if (boundaries->points[i].boundary_point != 0)
-    {
-      cloud_visual->points[i].r = 255;
-      cloud_visual->points[i].g = 0;
-      cloud_visual->points[i].b = 0;
-    }
-    else
-    {
-      cloud_visual->points[i].r = 255;
-      cloud_visual->points[i].g = 255;
-      cloud_visual->points[i].b = 255;
-    }
+    PCL_ERROR("load pcd failed");
+    printUsage(argv[0]);
+    return -1;
   }
-  pcl::visualization::CloudViewer viewer("view");
-  viewer.showCloud(cloud_visual);
+  std::cout << "load success. the num of points " << cloud->points.size() << std::endl;
+  float ne_radiussearch_r = 0.1, be_radiusearch_r = 0.1;
+  if (pcl::console::find_argument(argc, argv, "--nr") >= 0)
+  {
+    pcl::console::parse<float>(argc, argv, "--nr", ne_radiussearch_r);
+  }
+
+  if (pcl::console::find_argument(argc, argv, "--br") >= 0)
+  {
+    pcl::console::parse<float>(argc, argv, "--br", be_radiusearch_r);
+  }
+
+  // 滤波
+  pcl::PointCloud<pcl::PointXYZ>::Ptr boundary(new pcl::PointCloud<pcl::PointXYZ>);
+  estimateBorders(cloud, ne_radiussearch_r, be_radiusearch_r, boundary);
+
+  visualizeCloud(cloud, boundary);
 
   return 0;
 }
