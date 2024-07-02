@@ -20,6 +20,8 @@ filter:
     - bunny.pcd
   voxelgrid:
     - ro.pcd
+  ApproximateVoxelGrid:
+    - ro.pcd
 
 detect:
   detect_edge:
