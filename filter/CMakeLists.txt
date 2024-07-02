@@ -10,3 +10,7 @@ link_pcl_libraries(approx_voxelgrid)
 
 add_executable(statistical_filter StatisticalFilter.cpp ../my_functions.cpp ../my_functions.h)
 link_pcl_libraries(statistical_filter)
+
+
+add_executable(radius_filter RadiusFilter.cpp ../my_functions.cpp ../my_functions.h)
+link_pcl_libraries(radius_filter)

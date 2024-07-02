@@ -24,6 +24,8 @@ filter:
     - ro.pcd
   StatisticalFilter:
     - ro.pcd
+  RadiusFilter:
+    - ro.pcd
 
 detect:
   detect_edge:

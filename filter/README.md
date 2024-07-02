@@ -33,3 +33,13 @@ statistical 滤波
 sor.setMeanK(50);						 // 进行统计时 考虑邻近点数
 sor.setStddevMulThresh(0.1); // 设置判断是否为离群点的阈值 ，标准差的倍数
 ```
+
+radius 滤波 【测试 好像没有效果】
+设定每个点一定半径范围内周围至少有足够多的近邻，不满足就会被删除
+
+关键参数
+
+```cpp
+ror.setRadiusSearch(0.1); // 半径
+ror.setMinNeighborsInRadius(10); // 设置查询点的领域点集数小于10 删除
+```
