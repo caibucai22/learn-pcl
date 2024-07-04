@@ -16,6 +16,10 @@ basic:
     - pig_farm.pcd
 
 filter:
+  gauss:
+    - ro.pcd
+  median:
+    - ro.pcd
   passthrough:
     - bunny.pcd
   voxelgrid:
@@ -26,6 +30,19 @@ filter:
     - ro.pcd
   RadiusFilter:
     - ro.pcd
+  ConditionFilter:
+    - ro.pcd
+  ConditionFilter2:
+    - ro.pcd
+  ModelFilter:
+    - *
+  ProjectFilter_to_plane:
+    - ro.pcd
+  ProjectFilter_to_sphere:
+    - ro.pcd
+  ProjectFilter_to_cylinder:
+    - ro.pcd
+
 
 detect:
   detect_edge:
