@@ -19,7 +19,9 @@ void printArgs(int argc, char **argv);
 
 void visualizeCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr &cloud, pcl::PointCloud<pcl::PointXYZ>::Ptr &filter_cloud);
 
-void loadPCD(std::string pcd_path, pcl::PointCloud<pcl::PointXYZ>::Ptr ptr);
+void visualizeCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud, pcl::PointCloud<pcl::PointXYZRGB>::Ptr &filter_cloud);
+
+void loadPCD_(std::string pcd_path, pcl::PointCloud<pcl::PointXYZ>::Ptr ptr);
 
 // 下采样
 void downSample(pcl::PointCloud<pcl::PointXYZ>::Ptr source_cloud, pcl::PointCloud<pcl::PointXYZ>::Ptr dest_cloud);
