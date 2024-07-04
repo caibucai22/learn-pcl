@@ -1,3 +1,8 @@
+gauss 滤波
+
+median 滤波
+
+
 passthrough 滤波
 
 通过指定一个点云的属性（例如 x y z 坐标）的范围，仅保留那些在该范围的点，其余的点将被过滤掉
@@ -43,3 +48,24 @@ radius 滤波 【测试 好像没有效果】
 ror.setRadiusSearch(0.1); // 半径
 ror.setMinNeighborsInRadius(10); // 设置查询点的领域点集数小于10 删除
 ```
+
+Condition 滤波
+
+提供了两个示例
+
+- 根据 z 字段进行滤波
+- 根据 法向和曲率 进行滤波
+
+ModelFilter
+
+基于模型去进行滤波
+
+提供的示例
+基于球形去滤波
+
+
+projet filter 投影滤波
+
+- 基于平面进行滤波(将点云投影到平面)
+- 基于球形进行滤波()
+- 基于圆柱体进行滤波()
