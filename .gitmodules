@@ -1,0 +1,6 @@
+[submodule "PCL-Notes"]
+	path = PCL-Notes
+	url = git@github.com:MNewBie/PCL-Notes.git
+[submodule "referecne/PCL-Notes"]
+	path = referecne/PCL-Notes
+	url = git@github.com:MNewBie/PCL-Notes.git
