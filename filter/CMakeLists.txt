@@ -32,3 +32,6 @@ link_pcl_libraries(project_filter_to_sphere)
 
 add_executable(project_filter_to_cylinder ProjectFilter_to_Cylinder.cpp ../my_functions.cpp ../my_functions.h)
 link_pcl_libraries(project_filter_to_cylinder)
+
+add_executable(gauss_filter GaussFilter.cpp ../my_functions.cpp ../my_functions.h)
+link_pcl_libraries(gauss_filter)
