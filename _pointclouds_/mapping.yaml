@@ -43,7 +43,15 @@ filter:
   ProjectFilter_to_cylinder:
     - ro.pcd
 
-
+features:
+  NARF:
+    - room_scan1.pcd
+  VFH:
+    - bunny.pcd
+  PFH:
+    - bunny.pcd
+  FPFH:
+    - bunny.pcd
 detect:
   detect_edge:
     - *.ply
