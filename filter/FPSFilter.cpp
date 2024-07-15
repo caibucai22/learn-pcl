@@ -118,9 +118,10 @@ int main(int argc, char **argv)
 
   int num_points = points != 1000 ? points : 1000;
   int num_points_based_ratio = int(cloud->points.size() * ratio);
-  if(is_based_points && is_based_ratio)
+  if (is_based_points && is_based_ratio)
   {
-    PCL_ERROR("arg --points and --ratio  ")
+    PCL_ERROR("args --points and --ratio cannot exist at the same time ");
+    return -1;
   }
   if (is_based_points)
   {
@@ -129,6 +130,11 @@ int main(int argc, char **argv)
   if (is_based_ratio)
   {
     farthestPointSampling(cloud, sampledCloud, num_points_based_ratio);
+  }
+  if (is_saved)
+  {
+    pcl::io::savePCDFile("FPS-outpu.pcd", *sampledCloud);
+    std::cout << "save success" << std::endl;
   }
 
   std::cout << "sample cloud has " << sampledCloud->points.size() << " points." << std::endl;
