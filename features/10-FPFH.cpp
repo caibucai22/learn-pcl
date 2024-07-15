@@ -1,60 +1,64 @@
-#include<pcl/io/io.h>
-#include<pcl/point_types.h>
-#include<pcl/features/fpfh.h>
-#include<pcl/common/io.h>
-#include<pcl/io/pcd_io.h>
-#include<pcl/visualization/cloud_viewer.h>
-#include<pcl/visualization/pcl_plotter.h>
-#include<pcl/features/normal_3d.h> // ¹À¼Æ·¨Ïß
+#include <pcl/io/io.h>
+#include <pcl/point_types.h>
+#include <pcl/features/fpfh.h>
+#include <pcl/common/io.h>
+#include <pcl/io/pcd_io.h>
+#include <pcl/visualization/cloud_viewer.h>
+#include <pcl/visualization/pcl_plotter.h>
+#include <pcl/features/normal_3d.h> // ä¼°è®¡æ³•çº¿
+#include <time.h>
 
-int main105(int argc, char** argv)
+int main(int argc, char **argv)
 {
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
-	pcl::io::loadPCDFile("bunny.pcd", *cloud);
+	if (pcl::io::loadPCDFile(argv[1], *cloud) == -1)
+	{
+		PCL_ERROR("load pcd failed");
+		return -1;
+	}
+	std::cout << "load success, the num of points is " << cloud->points.size() << std::endl;
 	pcl::PointCloud<pcl::Normal>::Ptr normals(new pcl::PointCloud<pcl::Normal>());
 
-	// ¹À¼Æ·¨Ïß
+	// ä¼°è®¡æ³•çº¿
 	pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> ne;
 	pcl::search::KdTree<pcl::PointXYZ>::Ptr normal_tree(new pcl::search::KdTree<pcl::PointXYZ>);
-
 
 	ne.setSearchMethod(normal_tree);
 	ne.setInputCloud(cloud);
 	ne.setRadiusSearch(.03);
+	auto t1 = clock();
 	ne.compute(*normals);
+	cout << "normal estimation, elapsed time " << double(clock() - t1) / CLOCKS_PER_SEC << " seconds" << endl;
 
-	// ´´½¨ PFH ¹À¼Æ¶ÔÏó
-	pcl::FPFHEstimation<pcl::PointXYZ, pcl::Normal, pcl::FPFHSignature33> pfh;
+	// åˆ›å»º PFH ä¼°è®¡å¯¹è±¡
+	pcl::FPFHEstimation<pcl::PointXYZ, pcl::Normal, pcl::FPFHSignature33> fpfh;
 
-	pfh.setInputCloud(cloud);
-	pfh.setInputNormals(normals);
+	fpfh.setInputCloud(cloud);
+	fpfh.setInputNormals(normals);
 
-	//Èç¹ûµãÔÆÊÇÀàĞÍÎªPointNormal,ÔòÖ´ĞĞpfh.setInputNormals (cloud);
+	// å¦‚æœç‚¹äº‘æ˜¯ç±»å‹ä¸ºPointNormal,åˆ™æ‰§è¡Œpfh.setInputNormals (cloud);
 
-	// ´´½¨kdtree ¸ø pfh
+	// åˆ›å»ºkdtree ç»™ pfh
 	pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>());
 
-	pfh.setSearchMethod(tree);
+	fpfh.setSearchMethod(tree);
 
-	// Êä³ö
-	pcl::PointCloud<pcl::FPFHSignature33>::Ptr pfhs(new pcl::PointCloud<pcl::FPFHSignature33>());
+	// è¾“å‡º
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfhs(new pcl::PointCloud<pcl::FPFHSignature33>());
 
-	//Ê¹ÓÃ°ë¾¶ÔÚ5ÀåÃ×·¶Î§ÄÚµÄËùÓĞÁÚÔªËØ¡£
+	// ä½¿ç”¨åŠå¾„åœ¨5å˜ç±³èŒƒå›´å†…çš„æ‰€æœ‰é‚»å…ƒç´ ã€‚
 
-	//×¢Òâ£º´Ë´¦Ê¹ÓÃµÄ°ë¾¶±ØĞëÒª´óÓÚ¹À¼Æ±íÃæ·¨ÏßÊ±Ê¹ÓÃµÄ°ë¾¶!!!
+	// æ³¨æ„ï¼šæ­¤å¤„ä½¿ç”¨çš„åŠå¾„å¿…é¡»è¦å¤§äºä¼°è®¡è¡¨é¢æ³•çº¿æ—¶ä½¿ç”¨çš„åŠå¾„!!!
+	fpfh.setRadiusSearch(0.05);
 
-	pfh.setRadiusSearch(0.05);
+	auto t2 = clock();
+	fpfh.compute(*fpfhs);
+	cout << "compute fpfh feature, elapsed time " << double(clock() - t2) / CLOCKS_PER_SEC << " seconds" << endl;
 
-	pfh.compute(*pfhs);
-
-	// ¿ÉÊÓ»¯
-	pfh.compute(*pfhs);
-
-	// Ö±·½Í¼¿ÉÊÓ»¯
+	// ç›´æ–¹å›¾å¯è§†åŒ–
 	pcl::visualization::PCLPlotter plotter;
-	plotter.addFeatureHistogram(*pfhs, 300);
+	plotter.addFeatureHistogram(*fpfhs, 300);
 	plotter.plot();
-
 
 	return 0;
 }
