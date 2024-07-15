@@ -1,9 +1,23 @@
-gauss 滤波
+## gauss 滤波
 
-median 滤波
+通过 gauss 函数来完成滤波，对偏离程度外的 过滤掉
 
+kernel 参数设置
 
-passthrough 滤波
+```cpp
+kernel.setSigma(0.2);									 // 高斯函数的标准方差，决定函数的宽度
+kernel.setThresholdRelativeToSigma(4); // 设置相对Sigma参数的距离阈值
+kernel.setThreshold(0.05);
+```
+
+pcl::filters::Convolution3D<> filter
+
+## median 滤波
+
+使用模拟点云 演示原理
+设置为窗口内的中间值
+
+## passthrough 滤波
 
 通过指定一个点云的属性（例如 x y z 坐标）的范围，仅保留那些在该范围的点，其余的点将被过滤掉
 
@@ -12,7 +26,8 @@ passthrough 滤波
 - 限制点云范围 只对某个特定范围内的点 感兴趣时，可以使用 PassThrough
 - 预处理数据：进行复杂操作前，通过 passThrough 滤波器可以减少数据量，提升后续处理的效率
 
-gridvoxel 滤波
+## gridvoxel 滤波
+
 VoxelGrid 滤波器将点云数据划分成三维网格，每个网格单元称为一个体素。对于每个体素，保留该体素内点的重心（或其他代表点），舍弃其他点。这一过程减少了点云中的点数，同时保持点云的总体结构。
 
 使用场景
@@ -21,14 +36,16 @@ VoxelGrid 滤波器将点云数据划分成三维网格，每个网格单元称�
 - 噪声滤除：通过体素平均的方法，可以减少点云中的噪声。
 - 预处理步骤：在点云配准或点云分割等复杂操作之前，先对点云进行降采样，提高处理效率。
 
-approx gridvoxel 滤波
+## approx gridvoxel 滤波
+
 通过输入的点云数据创建一个三维体素栅格，用每个体素内所有点的中心来近似表示体素中的其他点， 这种计算中心的方法是基于哈希函数完成的，针对数据量巨大的大场景点云，要比 VoxelGrid 体素滤波器计算体素内所有点质心的方法快很多。
 
 ```
 setLeafSize(0.01, 0.01, 0.01);// 最小体素的边长
 ```
 
-statistical 滤波
+## statistical 滤波
+
 对每个点的邻域进行统计分析，则点云中所有点的距离假设构成高斯分布，其形状由均值 μ 和标准差 σ 决定
 设标准差倍数为 std std，算法实现过程中仅需输入 k 和 std 两个阈值，当某点临近 k 个点的平均距离在标准范围( μ－σ·std，μ+σ·std)内时保留该点，不在该范围内定义为离群点删除。
 
@@ -39,7 +56,8 @@ sor.setMeanK(50);						 // 进行统计时 考虑邻近点数
 sor.setStddevMulThresh(0.1); // 设置判断是否为离群点的阈值 ，标准差的倍数
 ```
 
-radius 滤波 【测试 好像没有效果】
+## radius 滤波 【测试 好像没有效果】
+
 设定每个点一定半径范围内周围至少有足够多的近邻，不满足就会被删除
 
 关键参数
@@ -49,23 +67,27 @@ ror.setRadiusSearch(0.1); // 半径
 ror.setMinNeighborsInRadius(10); // 设置查询点的领域点集数小于10 删除
 ```
 
-Condition 滤波
+## Condition 滤波
 
 提供了两个示例
 
 - 根据 z 字段进行滤波
 - 根据 法向和曲率 进行滤波
 
-ModelFilter
+## ModelFilter
 
 基于模型去进行滤波
 
 提供的示例
 基于球形去滤波
 
-
-projet filter 投影滤波
+## projet filter 投影滤波
 
 - 基于平面进行滤波(将点云投影到平面)
 - 基于球形进行滤波()
 - 基于圆柱体进行滤波()
+
+## BilateralFilter
+
+双边滤波
+滤波前后，点数不改变，强度发生改变

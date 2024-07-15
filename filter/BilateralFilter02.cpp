@@ -20,7 +20,7 @@ int main(int argc, char **argv)
 
 	pcl::PointCloud<pcl::PointXYZI>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZI>);
 
-	pcl::io::loadPCDFile(incloudFile.c_str(), *cloud);
+	pcl::io::loadPCDFile(argv[1], *cloud);
 	pcl::PointCloud<pcl::PointXYZI>::Ptr bf_filtered(new pcl::PointCloud<pcl::PointXYZI>);
 	pcl::copyPointCloud(*cloud, *bf_filtered);
 

@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 	convolution.convolve(*gassFilter);
 	cout << "convolution end" << endl;
 
-	pcl::io::savePCDFileASCII("../../_pointclouds/GS.pcd", *gassFilter);
+	pcl::io::savePCDFileASCII("GS_output.pcd", *gassFilter);
 	// -------------------------------------显示点云--------------------------------------
 	visualizeCloud(cloud, gassFilter);
 

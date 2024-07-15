@@ -35,3 +35,11 @@ link_pcl_libraries(project_filter_to_cylinder)
 
 add_executable(gauss_filter GaussFilter.cpp ../my_functions.cpp ../my_functions.h)
 link_pcl_libraries(gauss_filter)
+
+
+set_source_files_properties(BilateralFilter.cpp PROPERTIES COMPILE_FLAGS ${OpenMP_CXX_FLAGS})
+add_executable(biliate_filter BilateralFilter.cpp ../my_functions.cpp ../my_functions.h)
+link_pcl_libraries(biliate_filter)
+
+add_executable(FPS_filter FPSFilter.cpp ../my_functions.cpp ../my_functions.h)
+link_pcl_libraries(FPS_filter)
