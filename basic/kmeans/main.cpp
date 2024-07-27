@@ -54,6 +54,11 @@ int main(int argc, char *argv[])
   int clusterNum = 100;
   int maxIter = 100;
   prase_args(argc, argv, maxIter, clusterNum);
+  bool save = false;
+  if (pcl::console::find_argument(argc, argv, "-save") >= 0)
+  {
+    save = true;
+  }
   pcl::console::print_highlight("args: iters %d clusters %d \n", maxIter, clusterNum);
   KMeans kmeans(clusterNum, maxIter);
   std::vector<pcl::Indices> cluster_indices;
@@ -65,13 +70,6 @@ int main(int argc, char *argv[])
   stringstream ss;
   ss << "elapsed time " << to_string(time.getTimeSeconds()) << " second\n";
   pcl::console::print_highlight(ss.str().c_str());
-
-
-  bool save = false;
-  if (pcl::console::find_argument(argc, argv, "-save") >= 0)
-  {
-    save = true;
-  }
 
   if (save)
   {
