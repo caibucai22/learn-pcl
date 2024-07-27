@@ -130,6 +130,7 @@ void extractPointCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr &cloud, std::ve
       ss.str("");
       ss << "cloud_split_" << std::to_string(i * angle) << ".pcd";
       writer.write(ss.str(), *out_cloud_segments[i]);
+      std::cout << "save to " << ss.str() << "\n";
     }
   }
 }
@@ -216,6 +217,7 @@ void extractPointCloudByPassThrough(float angle, const pcl::PointCloud<pcl::Poin
         ss << "cloud_split_" << std::to_string(angle) << "_z"
            << "_" << ((start + z_ratio <= 1.0) ? std::to_string(start + z_ratio) : "1") << ".pcd";
         writer.write(ss.str(), *out_cloud_segments[i]);
+        std::cout << "save to " << ss.str() << "\n";
       }
       start += z_ratio;
     }
@@ -228,10 +230,10 @@ void extractPointCloudByPassThrough(float angle, const pcl::PointCloud<pcl::Poin
 
 void printUsage(const char *progname)
 {
-  std::cout << "\n\nUsage: " << progname << " pcd --big big_cloud --small small_cloud\n\n"
+  std::cout << "\n\nUsage: " << progname << " pcd --angle 30 --z_res 0.5 --save\n\n"
             << "Options:\n"
             << "-------------------------------------------\n"
-            << "-h           this help\n"
+            << "-h                this help\n"
             << "--angle           basic angle for spliting, default 30 \n"
             << "--z_res           z axis for spliting, default 1, 0.5 mean [0,0.5,1]\n"
             << "--save            save split result\n";
