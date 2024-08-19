@@ -101,6 +101,9 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr transformPointCloudToStandardCoordinates(
   // transformMatrix.block<3, 3>(0, 0) = eigenVectorsPCA.inverse(); // 正交矩阵 转置=逆矩阵
   transformMatrix.block<3, 1>(0, 3) = -1.0f * (eigenVectorsPCA.transpose() * pcaCentroid.head<3>());
 
+  std::cout << "transform matrix (4x4):\n"
+            << transformMatrix << std::endl;
+
   pcl::PointCloud<pcl::PointXYZ>::Ptr transformedCloud(new pcl::PointCloud<pcl::PointXYZ>);
   pcl::transformPointCloud(*cloud, *transformedCloud, transformMatrix);
 
