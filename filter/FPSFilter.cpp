@@ -16,10 +16,95 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/io/io.h>
 #include <pcl/console/parse.h>
+
 #include <vector>
 #include <limits>
 #include <iostream>
 #include "../my_functions.h"
+
+void my_fps(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud,
+            pcl::PointCloud<pcl::PointXYZ>::Ptr out_sample_cloud, int sample_size)
+{
+  std::vector<int> choseIdx;
+  std::vector<float> remain2choseDistances(cloud->size(), std::numeric_limits<float>::max());
+  // random chose, chose first here
+  choseIdx.push_back(0);
+
+  for (int i = 1; i < sample_size; i++)
+  {
+    int cur_loop_idx = -1;
+    float max_mindistance = -1;
+    pcl::PointXYZ lastP = cloud->points[choseIdx.back()];
+    for (int j = 0; j < cloud->size(); j++)
+    {
+      pcl::PointXYZ curP = cloud->points[j];
+      float dis = sqrt(pow(curP.x - lastP.x, 2) + pow(curP.y - lastP.y, 2) +
+                       pow(curP.z - lastP.z, 2));
+      if (dis < remain2choseDistances[j])
+      {
+        remain2choseDistances[j] = dis;
+      }
+
+      if (remain2choseDistances[j] > max_mindistance)
+      {
+        max_mindistance = remain2choseDistances[j];
+        cur_loop_idx = j;
+      }
+    }
+    choseIdx.push_back(cur_loop_idx);
+  }
+
+  pcl::PointIndices::Ptr chosedIndice(new pcl::PointIndices);
+  chosedIndice->indices = choseIdx;
+
+  pcl::ExtractIndices<pcl::PointXYZ> extract;
+  extract.setInputCloud(cloud);
+  extract.setIndices(chosedIndice);
+  extract.setNegative(false); // 如果设为true,可以提取指定index之外的点云
+  extract.filter(*out_sample_cloud);
+}
+
+void my_fps_max(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud,
+                pcl::PointCloud<pcl::PointXYZ>::Ptr out_sample_cloud, int sample_size)
+{
+  std::vector<int> choseIdx;
+  std::vector<float> remain2choseDistances(cloud->size(), std::numeric_limits<float>::min());
+  // random chose, chose first here
+  choseIdx.push_back(0);
+
+  for (int i = 1; i < sample_size; i++)
+  {
+    int cur_loop_idx = -1;
+    float max_mindistance = -1; // max_max_distance
+    pcl::PointXYZ lastP = cloud->points[choseIdx.back()];
+    for (int j = 0; j < cloud->size(); j++)
+    {
+      pcl::PointXYZ curP = cloud->points[j];
+      float dis = sqrt(pow(curP.x - lastP.x, 2) + pow(curP.y - lastP.y, 2) +
+                       pow(curP.z - lastP.z, 2));
+      if (dis > remain2choseDistances[j]) // 这样会有问题 会被 最远的点距离 , 无法捕捉到点云结构
+      {
+        remain2choseDistances[j] = dis;
+      }
+
+      if (remain2choseDistances[j] > max_mindistance)
+      {
+        max_mindistance = remain2choseDistances[j];
+        cur_loop_idx = j;
+      }
+    }
+    choseIdx.push_back(cur_loop_idx);
+  }
+
+  pcl::PointIndices::Ptr chosedIndice(new pcl::PointIndices);
+  chosedIndice->indices = choseIdx;
+
+  pcl::ExtractIndices<pcl::PointXYZ> extract;
+  extract.setInputCloud(cloud);
+  extract.setIndices(chosedIndice);
+  extract.setNegative(false); // 如果设为true,可以提取指定index之外的点云
+  extract.filter(*out_sample_cloud);
+}
 
 void farthestPointSampling(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud,
                            pcl::PointCloud<pcl::PointXYZ>::Ptr out_sample_cloud, int sample_size)
@@ -75,8 +160,9 @@ void printUsage(const char *progname)
             << "-------------------------------------------\n"
             << "-h                 this help\n"
             << "--points           basic angle for spliting, default 30 \n"
-            << "--ratio            z axis for spliting, default 1, 0.5 mean [0,0.5,1]\n"
-            << "--save             save result\n";
+            << "--ratio            ratio * num of points\n"
+            << "--save             save result\n"
+            << "--myimpl           execute my implement func\n";
 }
 
 int main(int argc, char **argv)
@@ -87,6 +173,7 @@ int main(int argc, char **argv)
   float ratio = 0.15;
   bool is_based_ratio = false;
   bool is_saved = false;
+  bool call_myimpl = false;
   if (pcl::console::find_argument(argc, argv, "--points") > 0)
   {
     pcl::console::parse<int>(argc, argv, "--points", points);
@@ -101,6 +188,10 @@ int main(int argc, char **argv)
   if (pcl::console::find_argument(argc, argv, "--save") > 0)
   {
     is_saved = true;
+  }
+  if (pcl::console::find_argument(argc, argv, "--myimpl") > 0)
+  {
+    call_myimpl = true;
   }
 
   //
@@ -130,6 +221,21 @@ int main(int argc, char **argv)
   if (is_based_ratio)
   {
     farthestPointSampling(cloud, sampledCloud, num_points_based_ratio);
+  }
+  pcl::PointCloud<pcl::PointXYZ>::Ptr myfps_min_sampledCloud(new pcl::PointCloud<pcl::PointXYZ>);
+  pcl::PointCloud<pcl::PointXYZ>::Ptr myfps_max_sampledCloud(new pcl::PointCloud<pcl::PointXYZ>);
+
+  if (call_myimpl)
+  {
+    std::cout << "[myfps] no visualize, plese check output file" << std::endl;
+    my_fps(cloud, myfps_min_sampledCloud, is_based_ratio ? num_points_based_ratio : num_points);
+    my_fps_max(cloud, myfps_max_sampledCloud, is_based_ratio ? num_points_based_ratio : num_points);
+
+    pcl::io::savePCDFile("myfps(min)-output.pcd", *myfps_min_sampledCloud);
+    pcl::io::savePCDFile("myfps(max)-output.pcd", *myfps_max_sampledCloud);
+
+    std::cout << "myfps min sample cloud has " << myfps_min_sampledCloud->points.size() << " points." << std::endl;
+    std::cout << "myfps max sample cloud has " << myfps_max_sampledCloud->points.size() << " points." << std::endl;
   }
   if (is_saved)
   {
