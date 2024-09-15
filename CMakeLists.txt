@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.18)
+
 
 project(learn_pcl)
 
@@ -62,6 +63,16 @@ else()
   message(FATAL_ERROR "Boost not found")
 endif()
 
+# openMP 
+
+find_package(OpenMP REQUIRED)
+if (OpenMP_FOUND)
+    message(STATUS "Found OpenMP")
+    # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+endif()
+
 
 # link function
 function(link_pcl_libraries target)
@@ -82,10 +93,18 @@ function(link_pcl_opencv_libraries target)
 endfunction()
 
 # subdir
-add_subdirectory(basic)
+# add_subdirectory(basic)
 
-add_subdirectory(detect)
+# add_subdirectory(features)
 
-add_subdirectory(visualize)
+# add_subdirectory(detect)
 
-add_subdirectory(filter)
+# add_subdirectory(visualize)
+
+# add_subdirectory(filter)
+
+add_subdirectory(fit)
+
+# add_subdirectory(segmentation)
+
+# add_subdirectory(tests)
